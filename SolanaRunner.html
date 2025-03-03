@@ -155,27 +155,22 @@
             backdrop-filter: blur(10px);
         }
 
-        .closeButton {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 30px;
-            height: 30px;
+        .gotItButton {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 16px;
             background: linear-gradient(45deg, #14F195, #0ed182);
             border: none;
-            border-radius: 50%;
             color: #1a1f2d;
-            font-size: 20px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
+            border-radius: 8px;
+            font-weight: bold;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
         }
 
-        .closeButton:hover {
-            transform: scale(1.1);
+        .gotItButton:hover {
+            transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(20, 241, 149, 0.4);
         }
 
@@ -271,13 +266,12 @@
     <button id="startButton">Start Game</button>
 
     <div class="instructions" id="instructions">
-        <button class="closeButton" onclick="closeInstructions()">×</button>
         <h2>Solana Runner</h2>
-        <p>Help the Solana logo navigate through the obstacles!</p>
-        <p>Use the <span class="key">←</span> and <span class="key">→</span> arrow keys to move left and right</p>
-        <p>Use the <span class="key">↑</span> and <span class="key">↓</span> arrow keys to move up and down</p>
-        <p>Avoid the red rugs and stay on the green safe zones</p>
-        <p>Press <span class="key">Start Game</span> to begin!</p>
+        <p>Help the Solana logo run through the obstacles!</p>
+        <p>Press <span class="key">Space</span> or <span class="key">Up Arrow</span> to jump</p>
+        <p>Press <span class="key">Down Arrow</span> to slide</p>
+        <p>Each second survived adds to your score</p>
+        <button class="gotItButton" onclick="closeInstructions()">Got it!</button>
     </div>
 
     <div class="gameOverPopup" id="gameOverPopup">
