@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy SOL</title>
+    <link rel="icon" type="image/png" href="assets/SOLANAMINIGAMES.png">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #0a0f1f 0%, #1f2c4c 100%);
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            position: relative;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #game {
+            width: 600px;
+            height: 800px;
+            position: relative;
+            background: rgba(26, 31, 45, 0.8);
+            border: 2px solid #14F195;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            cursor: default;
+        }
+
+        #homeButton {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            background: #14F195;
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 100;
+            transition: background-color 0.2s;
+        }
+
+        #homeButton:hover {
+            background: #0ed182;
+        }
+
+        #startButton {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 18px;
+            background: #14F195;
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: #14F195;
+        }
+
+        .player {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            background: url('assets/solana_logo.png') center center no-repeat;
+            background-size: contain;
+            transition: transform 0.2s;
+        }
+
+        .candle {
+            position: absolute;
+            width: 50px;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .candle-body {
+            width: 20px;
+            height: calc(100% - 30px);
+            margin-top: 15px;
+            position: relative;
+            background-color: currentColor;
+        }
+
+        .candle-wick {
+            width: 2px;
+            height: 15px;
+            background-color: currentColor;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .candle-wick.top {
+            top: -15px;
+        }
+
+        .candle-wick.bottom {
+            bottom: -15px;
+        }
+
+        .green {
+            color: #14F195;
+            box-shadow: 0 0 10px rgba(20, 241, 149, 0.3);
+        }
+
+        .red {
+            color: #ff4444;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+        }
+
+        .gameOverPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 31, 45, 0.95);
+            padding: 30px;
+            border: 2px solid #14F195;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 300px;
+        }
+
+        .gameOverPopup h2 {
+            color: #14F195;
+            margin: 0 0 20px 0;
+            font-size: 28px;
+        }
+
+        .gameOverPopup p {
+            font-size: 20px;
+            margin: 20px 0;
+            color: white;
+        }
+
+        .popupButtons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .popupButton {
+            padding: 12px 25px;
+            font-size: 16px;
+            background: #14F195;
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .popupButton:hover {
+            background: #0ed182;
+        }
+
+        .instructions {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 31, 45, 0.95);
+            padding: 40px;
+            border: 2px solid #14F195;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 300px;
+            box-shadow: 0 0 30px rgba(20, 241, 149, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .closeButton {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            border-radius: 50%;
+            color: #1a1f2d;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .closeButton:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(20, 241, 149, 0.4);
+        }
+
+        .instructions h2 {
+            color: #14F195;
+            margin: 0 0 25px 0;
+            font-size: 32px;
+            text-shadow: 0 0 10px rgba(20, 241, 149, 0.3);
+        }
+
+        .instructions p {
+            font-size: 18px;
+            margin: 20px 0;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .instructions .key {
+            display: inline-block;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            color: #1a1f2d;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin: 0 5px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <button id="homeButton" onclick="window.location.href='index.html'">Back to Home</button>
+    <div id="game">
+        <div class="score">Score: <span id="scoreValue">0</span></div>
+    </div>
+    <button id="startButton">Start Game</button>
+
+    <div class="instructions" id="instructions">
+        <button class="closeButton" onclick="closeInstructions()">×</button>
+        <h2>Flappy SOL</h2>
+        <p>Help the Solana logo fly through the candlestick charts!</p>
+        <p>Press <span class="key">Space</span> or <span class="key">Click</span> to make the logo jump</p>
+        <p>Navigate through the gaps between the red and green candles</p>
+        <p>Each successful pass adds 1 point to your score</p>
+        <p>Press <span class="key">Start Game</span> to begin!</p>
+    </div>
+
+    <div class="gameOverPopup" id="gameOverPopup">
+        <h2>Game Over!</h2>
+        <p>Congratulations! You scored <span id="finalScore">0</span> points!</p>
+        <div class="popupButtons">
+            <button class="popupButton" onclick="restartGame()">Try Again</button>
+            <button class="popupButton" onclick="window.location.href='index.html'">Back to Home</button>
+        </div>
+    </div>
+
+    <script>
+        const game = document.getElementById('game');
+        const startButton = document.getElementById('startButton');
+        let scoreDisplay = document.getElementById('scoreValue');
+        
+        // Game settings
+        const GRAVITY = 0.25; // Much lighter gravity
+        const JUMP_FORCE = -6; // Gentler jump
+        const CANDLE_SPEED = -2;
+        const CANDLE_GAP = 350;
+        const CANDLE_SPACING = 400;
+        const CANDLE_SPAWN_INTERVAL = 2000; // Shorter time between candles
+        const GAME_WIDTH = 600;
+
+        // Game state
+        let isPlaying = false;
+        let score = 0;
+        let player = null;
+        let playerVelocity = 0;
+        let candles = [];
+        let lastCandleTime = 0;
+        let animationId;
+
+        function createPlayer() {
+            player = document.createElement('div');
+            player.className = 'player';
+            player.style.left = '150px';
+            player.style.top = '400px';
+            game.appendChild(player);
+        }
+
+        function createCandle() {
+            const candlePair = document.createElement('div');
+            candlePair.className = 'candle-pair';
+            candlePair.style.position = 'absolute';
+            candlePair.style.left = GAME_WIDTH + 'px';
+            candlePair.style.width = '50px';
+            candlePair.style.height = '800px';
+
+            // Random gap position with more centered gaps
+            const gapStart = Math.random() * (300) + 200; // Higher minimum height
+            
+            // Top candle (red, pointing down)
+            const topCandle = document.createElement('div');
+            topCandle.className = 'candle';
+            topCandle.style.top = '0';
+            topCandle.style.height = gapStart + 'px';
+            
+            const topCandleBody = document.createElement('div');
+            topCandleBody.className = 'candle-body red';
+            topCandleBody.style.height = '100%';
+            
+            const topWickTop = document.createElement('div');
+            topWickTop.className = 'candle-wick top red';
+            const topWickBottom = document.createElement('div');
+            topWickBottom.className = 'candle-wick bottom red';
+            
+            topCandleBody.appendChild(topWickTop);
+            topCandleBody.appendChild(topWickBottom);
+            topCandle.appendChild(topCandleBody);
+
+            // Bottom candle (green, pointing up)
+            const bottomCandle = document.createElement('div');
+            bottomCandle.className = 'candle';
+            bottomCandle.style.top = (gapStart + CANDLE_GAP) + 'px';
+            bottomCandle.style.height = (800 - gapStart - CANDLE_GAP) + 'px';
+            
+            const bottomCandleBody = document.createElement('div');
+            bottomCandleBody.className = 'candle-body green';
+            bottomCandleBody.style.height = '100%';
+            
+            const bottomWickTop = document.createElement('div');
+            bottomWickTop.className = 'candle-wick top green';
+            const bottomWickBottom = document.createElement('div');
+            bottomWickBottom.className = 'candle-wick bottom green';
+            
+            bottomCandleBody.appendChild(bottomWickTop);
+            bottomCandleBody.appendChild(bottomWickBottom);
+            bottomCandle.appendChild(bottomCandleBody);
+
+            candlePair.appendChild(topCandle);
+            candlePair.appendChild(bottomCandle);
+            game.appendChild(candlePair);
+
+            return {
+                element: candlePair,
+                x: GAME_WIDTH,
+                gapStart: gapStart,
+                passed: false
+            };
+        }
+
+        function updateCandles() {
+            const now = Date.now();
+            if (now - lastCandleTime > CANDLE_SPAWN_INTERVAL) {
+                const newCandle = createCandle();
+                candles.push(newCandle);
+                lastCandleTime = now;
+            }
+
+            // Use for loop instead of forEach to safely handle splicing
+            for (let i = candles.length - 1; i >= 0; i--) {
+                const candle = candles[i];
+                candle.x += CANDLE_SPEED;
+                candle.element.style.left = `${candle.x}px`;
+
+                // Remove off-screen candles
+                if (candle.x < -60) {
+                    candle.element.remove();
+                    candles.splice(i, 1);
+                    continue;
+                }
+
+                // Score when passing candles
+                if (!candle.passed && candle.x < 130) {
+                    candle.passed = true;
+                    score++;
+                    scoreDisplay.textContent = score;
+                }
+            }
+        }
+
+        function checkCollision() {
+            if (!player) return false;
+
+            const playerRect = {
+                left: 150,
+                right: 200,
+                top: parseInt(player.style.top),
+                bottom: parseInt(player.style.top) + 50
+            };
+
+            for (const candle of candles) {
+                if (candle.x > 200 || candle.x + 50 < 150) continue;
+
+                // Check collision with top candle
+                if (playerRect.top < candle.gapStart) return true;
+
+                // Check collision with bottom candle
+                if (playerRect.bottom > candle.gapStart + CANDLE_GAP) return true;
+            }
+
+            // Check if player hits the ground or ceiling
+            if (playerRect.top < 0 || playerRect.bottom > 800) return true;
+
+            return false;
+        }
+
+        function updatePlayer() {
+            playerVelocity += GRAVITY;
+            // Limit maximum fall speed
+            playerVelocity = Math.min(playerVelocity, 8);
+            const newTop = parseInt(player.style.top) + playerVelocity;
+            player.style.top = newTop + 'px';
+            
+            // Gentler rotation
+            const rotation = Math.min(Math.max(playerVelocity * 1.5, -20), 20);
+            player.style.transform = `rotate(${rotation}deg)`;
+        }
+
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            updatePlayer();
+            updateCandles();
+
+            if (checkCollision()) {
+                gameOver();
+                return;
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function jump() {
+            if (!isPlaying) return;
+            playerVelocity = JUMP_FORCE;
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            
+            const popup = document.getElementById('gameOverPopup');
+            const finalScore = document.getElementById('finalScore');
+            finalScore.textContent = score;
+            popup.style.display = 'block';
+        }
+
+        function restartGame() {
+            const popup = document.getElementById('gameOverPopup');
+            popup.style.display = 'none';
+            startGame();
+        }
+
+        function closeInstructions() {
+            const instructions = document.getElementById('instructions');
+            instructions.style.display = 'none';
+        }
+
+        function startGame() {
+            const instructions = document.getElementById('instructions');
+            instructions.style.display = 'none';
+            game.innerHTML = '<div class="score">Score: <span id="scoreValue">0</span></div>';
+            scoreDisplay = document.getElementById('scoreValue');
+            score = 0;
+            playerVelocity = 0;
+            candles = [];
+            lastCandleTime = Date.now();
+            
+            createPlayer();
+            
+            // Create initial candles closer together
+            const firstCandle = createCandle();
+            firstCandle.x = GAME_WIDTH;
+            firstCandle.element.style.left = `${firstCandle.x}px`;
+            candles.push(firstCandle);
+
+            const secondCandle = createCandle();
+            secondCandle.x = GAME_WIDTH + 350; // Slightly closer second candle
+            secondCandle.element.style.left = `${secondCandle.x}px`;
+            candles.push(secondCandle);
+            
+            isPlaying = true;
+            startButton.style.display = 'none';
+            gameLoop();
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                jump();
+            }
+        });
+
+        document.addEventListener('click', () => {
+            jump();
+        });
+
+        startButton.addEventListener('click', startGame);
+    </script>
+</body>
+</html>

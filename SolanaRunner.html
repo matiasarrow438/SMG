@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Runner</title>
+    <link rel="icon" type="image/png" href="assets/SOLANAMINIGAMES.png">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #0a0f1f 0%, #1f2c4c 100%);
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        #game {
+            width: 400px;
+            height: 600px;
+            position: relative;
+            background: rgba(26, 31, 45, 0.8);
+            border: 2px solid #14F195;
+            border-radius: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 30px rgba(20, 241, 149, 0.2);
+        }
+
+        .player {
+            width: 30px;
+            height: 30px;
+            position: absolute;
+            background: url('assets/solana_logo.png') center center no-repeat;
+            background-size: contain;
+            image-rendering: -webkit-optimize-contrast;
+            transition: all 0.15s;
+            z-index: 10;
+            filter: drop-shadow(0 0 5px rgba(20, 241, 149, 0.5));
+        }
+
+        .row {
+            width: 100%;
+            height: 40px;
+            position: absolute;
+            transition: top 0.15s linear;
+        }
+
+        .safe {
+            background: linear-gradient(90deg, 
+                rgba(20, 241, 149, 0.1) 0%,
+                rgba(20, 241, 149, 0.2) 50%,
+                rgba(20, 241, 149, 0.1) 100%);
+            border-top: 1px solid rgba(20, 241, 149, 0.3);
+            border-bottom: 1px solid rgba(20, 241, 149, 0.3);
+        }
+
+        .road {
+            background: linear-gradient(90deg, 
+                rgba(42, 47, 61, 0.7) 0%,
+                rgba(42, 47, 61, 0.8) 50%,
+                rgba(42, 47, 61, 0.7) 100%);
+        }
+
+        .rug {
+            width: 60px;
+            height: 36px;
+            position: absolute;
+            background: linear-gradient(45deg, #ff4444, #ff6666);
+            top: 2px;
+            border-radius: 4px;
+            opacity: 0.8;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .rug:hover {
+            transform: scale(1.05);
+        }
+
+        #startButton {
+            margin-top: 20px;
+            padding: 12px 35px;
+            font-size: 18px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(20, 241, 149, 0.3);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #startButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(20, 241, 149, 0.4);
+        }
+
+        .score {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 24px;
+            color: #14F195;
+            text-shadow: 0 0 10px rgba(20, 241, 149, 0.3);
+            font-weight: bold;
+            background: rgba(26, 31, 45, 0.8);
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(20, 241, 149, 0.3);
+        }
+
+        #homeButton {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-size: 14px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 20px;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(20, 241, 149, 0.3);
+            font-weight: bold;
+        }
+
+        #homeButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(20, 241, 149, 0.4);
+        }
+
+        .instructions {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 31, 45, 0.95);
+            padding: 40px;
+            border: 2px solid #14F195;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 300px;
+            box-shadow: 0 0 30px rgba(20, 241, 149, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .closeButton {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            border-radius: 50%;
+            color: #1a1f2d;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .closeButton:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(20, 241, 149, 0.4);
+        }
+
+        .instructions h2 {
+            color: #14F195;
+            margin: 0 0 25px 0;
+            font-size: 32px;
+            text-shadow: 0 0 10px rgba(20, 241, 149, 0.3);
+        }
+
+        .instructions p {
+            font-size: 18px;
+            margin: 20px 0;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .instructions .key {
+            display: inline-block;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            color: #1a1f2d;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin: 0 5px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
+        }
+
+        .gameOverPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 31, 45, 0.95);
+            padding: 40px;
+            border: 2px solid #14F195;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 300px;
+            box-shadow: 0 0 30px rgba(20, 241, 149, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .gameOverPopup h2 {
+            color: #14F195;
+            margin: 0 0 25px 0;
+            font-size: 32px;
+            text-shadow: 0 0 10px rgba(20, 241, 149, 0.3);
+        }
+
+        .gameOverPopup p {
+            font-size: 24px;
+            margin: 25px 0;
+            color: white;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .popupButtons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 35px;
+        }
+
+        .popupButton {
+            padding: 12px 25px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(20, 241, 149, 0.3);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .popupButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(20, 241, 149, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <button id="homeButton" onclick="window.location.href='index.html'">Back to Home</button>
+    <div id="game">
+        <div class="score">Score: <span id="scoreValue">0</span></div>
+    </div>
+    <button id="startButton">Start Game</button>
+
+    <div class="instructions" id="instructions">
+        <button class="closeButton" onclick="closeInstructions()">×</button>
+        <h2>Solana Runner</h2>
+        <p>Help the Solana logo navigate through the obstacles!</p>
+        <p>Use the <span class="key">←</span> and <span class="key">→</span> arrow keys to move left and right</p>
+        <p>Use the <span class="key">↑</span> and <span class="key">↓</span> arrow keys to move up and down</p>
+        <p>Avoid the red rugs and stay on the green safe zones</p>
+        <p>Press <span class="key">Start Game</span> to begin!</p>
+    </div>
+
+    <div class="gameOverPopup" id="gameOverPopup">
+        <h2>Game Over!</h2>
+        <p>Congratulations! You scored <span id="finalScore">0</span> points!</p>
+        <div class="popupButtons">
+            <button class="popupButton" onclick="restartGame()">Try Again</button>
+            <button class="popupButton" onclick="window.location.href='index.html'">Back to Home</button>
+        </div>
+    </div>
+
+    <script>
+        // Game elements
+        const game = document.getElementById('game');
+        const startButton = document.getElementById('startButton');
+        let scoreDisplay = document.getElementById('scoreValue');
+
+        // Game settings
+        const GRID_SIZE = 40;
+        const GRID_WIDTH = 10;
+        const GRID_HEIGHT = 15;
+        const BUFFER_ROWS = 5; // Number of extra rows to generate ahead
+
+        // Game state
+        let isPlaying = false;
+        let score = 0;
+        let player = null;
+        let currentRow = GRID_HEIGHT - 1;
+        let viewportOffset = 0;
+        let rows = [];
+        let rugs = [];
+        let animationId;
+
+        function createPlayer() {
+            player = document.createElement('div');
+            player.className = 'player';
+            player.style.left = (GRID_SIZE * 5 + 5) + 'px';
+            player.style.top = (GRID_HEIGHT - 1) * GRID_SIZE + 5 + 'px';
+            game.appendChild(player);
+        }
+
+        function createRug(row, direction) {
+            const rug = document.createElement('div');
+            rug.className = 'rug';
+            row.element.appendChild(rug);
+
+            const rugObj = {
+                element: rug,
+                x: direction > 0 ? -60 : 400,
+                speed: 1 + Math.random(),
+                direction: direction,
+                rowIndex: row.index
+            };
+
+            rugs.push(rugObj);
+            updatePosition(rugObj);
+            return rugObj;
+        }
+
+        function createCover(row) {
+            const cover = document.createElement('div');
+            cover.className = 'cover';
+            const x = Math.floor(Math.random() * (GRID_WIDTH - 1)) * GRID_SIZE;
+            cover.style.left = x + 'px';
+            cover.style.top = '0px';
+            row.element.appendChild(cover);
+        }
+
+        function updatePosition(obj) {
+            obj.element.style.left = obj.x + 'px';
+        }
+
+        function createRow(index, type) {
+            const row = document.createElement('div');
+            row.className = `row ${type}`;
+            row.style.top = (index * GRID_SIZE) + 'px';
+            game.appendChild(row);
+            
+            const rowObj = {
+                element: row,
+                index: index,
+                type: type
+            };
+            
+            rows.push(rowObj);
+
+            if (type === 'road') {
+                const numRugs = 1 + Math.floor(Math.random() * 2);
+                for (let i = 0; i < numRugs; i++) {
+                    const direction = Math.random() < 0.5 ? 1 : -1;
+                    createRug(rowObj, direction);
+                }
+            }
+
+            return rowObj;
+        }
+
+        function createInitialGrid() {
+            rows = [];
+            // Create initial grid plus buffer rows
+            for (let i = -BUFFER_ROWS; i < GRID_HEIGHT; i++) {
+                const type = i === GRID_HEIGHT - 1 || Math.abs(i) % 3 === 0 ? 'safe' : 'road';
+                createRow(i, type);
+            }
+        }
+
+        function updateViewport() {
+            rows.forEach(row => {
+                row.element.style.top = ((row.index * GRID_SIZE) + viewportOffset) + 'px';
+            });
+        }
+
+        function addNewRow() {
+            // Remove rows that are too far off screen
+            rows = rows.filter(row => {
+                if (row.element.offsetTop > 600 + GRID_SIZE * 2) {
+                    row.element.remove();
+                    // Also remove associated rugs
+                    rugs = rugs.filter(rug => rug.rowIndex !== row.index);
+                    return false;
+                }
+                return true;
+            });
+
+            // Add new rows at the top
+            const lowestIndex = Math.min(...rows.map(row => row.index));
+            for (let i = lowestIndex - 1; i >= lowestIndex - BUFFER_ROWS; i--) {
+                if (!rows.some(row => row.index === i)) {
+                    const type = Math.abs(i) % 3 === 0 ? 'safe' : 'road';
+                    createRow(i, type);
+                }
+            }
+        }
+
+        function checkCollision() {
+            if (!player) return false;
+            
+            const playerRect = {
+                left: parseInt(player.style.left) || 0,
+                right: (parseInt(player.style.left) || 0) + 30,
+                top: parseInt(player.style.top) || 0,
+                bottom: (parseInt(player.style.top) || 0) + 30
+            };
+
+            for (const rug of rugs) {
+                const rugRect = {
+                    left: rug.x,
+                    right: rug.x + 60,
+                    top: ((rug.rowIndex * GRID_SIZE) + viewportOffset) + 5,
+                    bottom: ((rug.rowIndex * GRID_SIZE) + viewportOffset) + 35
+                };
+
+                if (playerRect.left < rugRect.right &&
+                    playerRect.right > rugRect.left &&
+                    playerRect.top < rugRect.bottom &&
+                    playerRect.bottom > rugRect.top) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            // Update rug positions
+            rugs.forEach(rug => {
+                rug.x += rug.speed * rug.direction;
+                if (rug.direction > 0 && rug.x > 400) {
+                    rug.x = -60;
+                } else if (rug.direction < 0 && rug.x < -60) {
+                    rug.x = 400;
+                }
+                updatePosition(rug);
+            });
+
+            // Check for collisions
+            if (checkCollision()) {
+                gameOver();
+                return;
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            
+            const popup = document.getElementById('gameOverPopup');
+            const finalScore = document.getElementById('finalScore');
+            finalScore.textContent = score;
+            popup.style.display = 'block';
+        }
+
+        function restartGame() {
+            const popup = document.getElementById('gameOverPopup');
+            popup.style.display = 'none';
+            startGame();
+        }
+
+        function closeInstructions() {
+            const instructions = document.getElementById('instructions');
+            instructions.style.display = 'none';
+        }
+
+        function startGame() {
+            const instructions = document.getElementById('instructions');
+            instructions.style.display = 'none';
+            
+            game.innerHTML = '<div class="score">Score: <span id="scoreValue">0</span></div>';
+            scoreDisplay = document.getElementById('scoreValue');
+            score = 0;
+            currentRow = GRID_HEIGHT - 1;
+            viewportOffset = 0;
+            rugs = [];
+            rows = [];
+            
+            createInitialGrid();
+            createPlayer();
+            
+            isPlaying = true;
+            startButton.style.display = 'none';
+            gameLoop();
+        }
+
+        function handleMove(e) {
+            if (!isPlaying) return;
+
+            const key = e.key.toLowerCase();
+            const currentLeft = parseInt(player.style.left) || 0;
+            const currentTop = parseInt(player.style.top) || 0;
+
+            let newLeft = currentLeft;
+            let newTop = currentTop;
+
+            if ((key === 'a' || key === 'arrowleft') && currentLeft > 0) {
+                newLeft = currentLeft - GRID_SIZE;
+            }
+            if ((key === 'd' || key === 'arrowright') && currentLeft < 360) {
+                newLeft = currentLeft + GRID_SIZE;
+            }
+            if (key === 'w' || key === 'arrowup') {
+                if (currentTop > 280) {
+                    newTop = currentTop - GRID_SIZE;
+                } else {
+                    viewportOffset += GRID_SIZE;
+                    updateViewport();
+                    addNewRow();
+                }
+                currentRow--;
+                score++;
+                scoreDisplay.textContent = score;
+            }
+            if ((key === 's' || key === 'arrowdown') && currentTop < 560) {
+                newTop = currentTop + GRID_SIZE;
+                currentRow++;
+            }
+
+            player.style.left = newLeft + 'px';
+            player.style.top = newTop + 'px';
+        }
+
+        document.addEventListener('keydown', handleMove);
+        startButton.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
