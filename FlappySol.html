@@ -237,6 +237,25 @@
             font-weight: bold;
             box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
         }
+
+        .gotItButton {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
+        }
+
+        .gotItButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(20, 241, 149, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -247,13 +266,12 @@
     <button id="startButton">Start Game</button>
 
     <div class="instructions" id="instructions">
-        <button class="closeButton" onclick="closeInstructions()">×</button>
         <h2>Flappy SOL</h2>
         <p>Help the Solana logo fly through the candlestick charts!</p>
         <p>Press <span class="key">Space</span> or <span class="key">Click</span> to make the logo jump</p>
         <p>Navigate through the gaps between the red and green candles</p>
         <p>Each successful pass adds 1 point to your score</p>
-        <p>Press <span class="key">Start Game</span> to begin!</p>
+        <button class="gotItButton" onclick="closeInstructions()">Got it!</button>
     </div>
 
     <div class="gameOverPopup" id="gameOverPopup">
