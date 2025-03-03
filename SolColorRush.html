@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Color Rush</title>
+    <link rel="icon" type="image/png" href="assets/SOLANAMINIGAMES.png">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0f1f 0%, #1f2c4c 100%);
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            user-select: none;
+            min-height: 100vh;
+            width: 100vw;
+            padding: 0;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            margin: 20px auto;
+            border: 2px solid #14F195;
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(26, 31, 45, 0.8);
+            box-shadow: 0 0 50px rgba(20, 241, 149, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #14F195;
+            text-shadow: 0 0 10px rgba(20, 241, 149, 0.3);
+            z-index: 10;
+        }
+
+        #homeButton {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-size: 14px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 20px;
+            z-index: 100;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(20, 241, 149, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        #homeButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(20, 241, 149, 0.4);
+        }
+
+        .instructions {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 31, 45, 0.95);
+            padding: 40px;
+            border: 2px solid #14F195;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 300px;
+            box-shadow: 0 0 30px rgba(20, 241, 149, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .instructions h2 {
+            color: #14F195;
+            margin: 0 0 25px 0;
+            font-size: 32px;
+            text-shadow: 0 0 10px rgba(20, 241, 149, 0.3);
+        }
+
+        .instructions p {
+            font-size: 18px;
+            margin: 15px 0;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .color-key {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin: 0 5px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
+        }
+
+        .purple-key {
+            background: #9945FF;
+            color: white;
+        }
+
+        .green-key {
+            background: #14F195;
+            color: #1a1f2d;
+        }
+
+        .white-key {
+            background: white;
+            color: #1a1f2d;
+        }
+
+        .gotItButton {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(20, 241, 149, 0.3);
+        }
+
+        .gotItButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(20, 241, 149, 0.4);
+        }
+
+        .gameOverPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 31, 45, 0.95);
+            padding: 40px;
+            border: 2px solid #14F195;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 300px;
+            box-shadow: 0 0 30px rgba(20, 241, 149, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .gameOverPopup h2 {
+            color: #14F195;
+            margin: 0 0 25px 0;
+            font-size: 32px;
+            text-shadow: 0 0 10px rgba(20, 241, 149, 0.3);
+        }
+
+        .gameOverPopup p {
+            font-size: 24px;
+            margin: 25px 0;
+            color: white;
+        }
+
+        .popupButton {
+            padding: 12px 25px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #14F195, #0ed182);
+            border: none;
+            color: #1a1f2d;
+            cursor: pointer;
+            border-radius: 25px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(20, 241, 149, 0.3);
+            font-weight: bold;
+        }
+
+        .popupButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(20, 241, 149, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <button id="homeButton" onclick="window.location.href='index.html'">Back to Home</button>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div class="score">Score: <span id="scoreValue">0</span></div>
+    </div>
+
+    <div class="instructions" id="instructions">
+        <h2>Solana Color Rush</h2>
+        <p>Match your color with the incoming gates to pass through!</p>
+        <p>Press these keys to change colors:</p>
+        <p>
+            <span class="color-key purple-key">1</span> Purple
+            <span class="color-key green-key">2</span> Green
+            <span class="color-key white-key">3</span> White
+        </p>
+        <p>Speed increases as you score more points!</p>
+        <button class="gotItButton" onclick="startGame()">Got it!</button>
+    </div>
+
+    <div class="gameOverPopup" id="gameOverPopup">
+        <h2>Game Over!</h2>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <button class="popupButton" onclick="restartGame()">Try Again</button>
+        <button class="popupButton" onclick="window.location.href='index.html'">Back to Home</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreValue');
+
+        // Set canvas size
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // Game constants
+        const COLORS = {
+            PURPLE: '#9945FF',
+            GREEN: '#14F195',
+            WHITE: '#FFFFFF'
+        };
+        const INITIAL_SPEED = 5;
+        const SPEED_INCREMENT = 0.2;
+        const GATE_WIDTH = 100;
+        const PLAYER_SIZE = 30;
+
+        // Game state
+        let player = {
+            x: 100,
+            y: canvas.height / 2,
+            color: COLORS.PURPLE
+        };
+        let gates = [];
+        let score = 0;
+        let gameSpeed = INITIAL_SPEED;
+        let isPlaying = false;
+        let particles = [];
+
+        // Initialize game
+        function initGame() {
+            player = {
+                x: 100,
+                y: canvas.height / 2,
+                color: COLORS.PURPLE
+            };
+            gates = [];
+            score = 0;
+            gameSpeed = INITIAL_SPEED;
+            particles = [];
+            scoreDisplay.textContent = score;
+            createGate();
+        }
+
+        // Create a new gate
+        function createGate() {
+            const colors = [COLORS.PURPLE, COLORS.GREEN, COLORS.WHITE];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            gates.push({
+                x: canvas.width,
+                color: randomColor
+            });
+        }
+
+        // Create particles
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    dx: (Math.random() - 0.5) * 8,
+                    dy: (Math.random() - 0.5) * 8,
+                    size: Math.random() * 4 + 2,
+                    color: color,
+                    life: 1
+                });
+            }
+        }
+
+        // Update particles
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life -= 0.02;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // Draw particles
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        // Update game state
+        function update() {
+            if (!isPlaying) return;
+
+            // Move gates
+            gates.forEach((gate, index) => {
+                gate.x -= gameSpeed;
+
+                // Check collision
+                if (gate.x <= player.x + PLAYER_SIZE && gate.x + GATE_WIDTH >= player.x) {
+                    if (gate.color === player.color) {
+                        if (!gate.passed) {
+                            score += 10;
+                            scoreDisplay.textContent = score;
+                            gameSpeed += SPEED_INCREMENT;
+                            gate.passed = true;
+                            createParticles(player.x + PLAYER_SIZE/2, player.y, player.color);
+                        }
+                    } else if (gate.x + GATE_WIDTH/2 >= player.x && gate.x <= player.x + PLAYER_SIZE) {
+                        gameOver();
+                        return;
+                    }
+                }
+            });
+
+            // Remove off-screen gates
+            if (gates[0] && gates[0].x + GATE_WIDTH < 0) {
+                gates.shift();
+                createGate();
+            }
+
+            // Update particles
+            updateParticles();
+        }
+
+        // Draw game state
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw gates
+            gates.forEach(gate => {
+                ctx.fillStyle = gate.color;
+                ctx.fillRect(gate.x, 0, GATE_WIDTH, canvas.height);
+            });
+
+            // Draw player
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y - PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
+
+            // Draw particles
+            drawParticles();
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!isPlaying) return;
+            
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        function startGame() {
+            const instructions = document.getElementById('instructions');
+            const gameOver = document.getElementById('gameOverPopup');
+            instructions.style.display = 'none';
+            gameOver.style.display = 'none';
+            initGame();
+            isPlaying = true;
+            gameLoop();
+        }
+
+        // Game over
+        function gameOver() {
+            isPlaying = false;
+            const popup = document.getElementById('gameOverPopup');
+            const finalScore = document.getElementById('finalScore');
+            finalScore.textContent = score;
+            popup.style.display = 'block';
+        }
+
+        // Restart game
+        function restartGame() {
+            startGame();
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            if (!isPlaying) return;
+            
+            switch (e.key) {
+                case '1':
+                    player.color = COLORS.PURPLE;
+                    break;
+                case '2':
+                    player.color = COLORS.GREEN;
+                    break;
+                case '3':
+                    player.color = COLORS.WHITE;
+                    break;
+            }
+        });
+
+        // Initial draw
+        draw();
+    </script>
+</body>
+</html>
